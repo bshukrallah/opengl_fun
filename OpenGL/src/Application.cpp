@@ -1,5 +1,14 @@
 #include <iostream>
-#include <GLFW/glfw3.h>
+#include <GL\glew.h>
+#include <glfw3.h>
+
+
+#if DEV_MODE_LOGGING == true
+#define LOG(x) std::cout << x << std::endl
+#elif DEV_MODE_LOGGING == false
+#define LOG(x)
+#endif
+
 
 int main(void)
 {
@@ -19,6 +28,9 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    glewInit();
+    LOG("Debug Logging is True");
+    LOG(glGetString(GL_VERSION));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -28,7 +40,7 @@ int main(void)
         glBegin(GL_TRIANGLES);
         glVertex2f(-0.5f, -0.5f);
         glVertex2f(0.0f, 0.5f);
-        glVertex2f(0.5f, -0.5f);
+        glVertex2f(0.5f, 0.0f);
         glEnd();
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
