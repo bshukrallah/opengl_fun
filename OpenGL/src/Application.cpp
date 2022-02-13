@@ -8,6 +8,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 
 struct ShaderProgramSource
@@ -109,30 +110,33 @@ int main(void)
     glfwSwapInterval(1);
 
     glewInit();
-
-    float positions[] = {
-   -0.5f, -0.5f,
-    0.5f,  0.5f,
-    0.5f, -0.5f,
-   -0.5f,  0.5f
-    };
-
-    unsigned int indices[] = {
-        0,1,2,
-        0,3,1
-    };
-
-    unsigned int vao;
-    GLCall(glGenVertexArrays(1, &vao));
-    GLCall(glBindVertexArray(vao));
-
-    LOG("Debug Logging is True"); //LOG command is set to only work in DEBUG compile
-    LOG(glGetString(GL_VERSION)); //LOG OpenGL Version to console
     {
+
+        LOG("Debug Logging is True"); //LOG command is set to only work in DEBUG compile
+        LOG(glGetString(GL_VERSION)); //LOG OpenGL Version to console
+        float positions[] = {
+       -0.5f, -0.5f,
+        0.5f,  0.5f,
+        0.5f, -0.5f,
+       -0.5f,  0.5f
+        };
+
+        unsigned int indices[] = {
+            0,1,2,
+            0,3,1
+        };
+
+
+
+        VertexArray va;
         VertexBuffer vb(positions, sizeof(positions));
 
-        GLCall(glEnableVertexAttribArray(0));
-        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        va.AddBuffer(vb, layout);
+
+
+
 
         IndexBuffer ib(indices, sizeof(indices));
 
@@ -159,24 +163,10 @@ int main(void)
             /* Render here */
             glClear(GL_COLOR_BUFFER_BIT);
 
-            //glDrawArrays(GL_TRIANGLES, 0, 6);
-            //Use glDrawArrays when specifically drawing from an array (ex: float positions, above)
-            //In our example, we are drawing from the indices, so we use glDrawElements
-
-
             glUseProgram(shader);
             GLCall(glUniform4f(location, 0.0f, b, 1.0f, 1.0f));
-            glBindVertexArray(vao);
+            va.Bind();
             ib.Bind();
-
-            //glBindBuffer(GL_ARRAY_BUFFER, buffer);
-
-            GLCall(glEnableVertexAttribArray(0));
-            GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-
-            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); //Triangle, number of indices, data type, nothing...)
 
 
