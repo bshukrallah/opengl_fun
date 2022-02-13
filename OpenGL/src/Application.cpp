@@ -5,12 +5,10 @@
 #include <GL\glew.h>
 #include <glfw3.h>
 
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
-#if DEV_MODE_LOGGING == true
-#define LOG(x) std::cout << x << std::endl
-#elif DEV_MODE_LOGGING == false
-#define LOG(x)
-#endif
 
 struct ShaderProgramSource
 {
@@ -69,8 +67,6 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
 static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
 {
     unsigned int program = glCreateProgram();
-    LOG(vertexShader);
-    LOG(fragmentShader);
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
@@ -94,6 +90,11 @@ int main(void)
     if (!glfwInit())
         return -1;
 
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Open GL Window", NULL, NULL);
     if (!window)
@@ -102,11 +103,18 @@ int main(void)
         return -1;
     }
 
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(1);
+
+    glewInit();
+
     float positions[] = {
-       -0.5f, -0.5f,
-        0.5f,  0.5f,
-        0.5f, -0.5f,
-       -0.5f,  0.5f
+   -0.5f, -0.5f,
+    0.5f,  0.5f,
+    0.5f, -0.5f,
+   -0.5f,  0.5f
     };
 
     unsigned int indices[] = {
@@ -114,62 +122,80 @@ int main(void)
         0,3,1
     };
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-    glewInit();
-    LOG("Debug Logging is True");
-    LOG(glGetString(GL_VERSION));
-    //Create a buffer
-    unsigned int buffer;
-    //We need 1 buffer, and assign a pointer to the unsigned int above
-    glGenBuffers(1, &buffer);
-    //Tell opengl what to do with the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-    //indices are fed into the GPU via the indexBuffer...
-    unsigned int indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
 
-
-    ShaderProgramSource shaderSource = ParseShader("resources/shaders/Basic.Shader");
-    LOG("VERTEX SHADER");
-    LOG(shaderSource.VertexSource);
-    LOG("FRAGMENT SHADER");
-    LOG(shaderSource.FragmentSource);
-
-    std::string vertexShader = shaderSource.VertexSource;
-    std::string fragmentShader = shaderSource.FragmentSource;
-
-    unsigned int shader = CreateShader(vertexShader, fragmentShader);
-
-    glUseProgram(shader);
-
-
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
+    LOG("Debug Logging is True"); //LOG command is set to only work in DEBUG compile
+    LOG(glGetString(GL_VERSION)); //LOG OpenGL Version to console
     {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        VertexBuffer vb(positions, sizeof(positions));
 
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
-        //Use glDrawArrays when specifically drawing from an array (ex: float positions, above)
-        //In our example, we are drawing from the indices, so we use glDrawElements
+        GLCall(glEnableVertexAttribArray(0));
+        GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr); //Triangle, number of indices, data type, nothing...)
+        IndexBuffer ib(indices, sizeof(indices));
+
+        ShaderProgramSource shaderSource = ParseShader("resources/shaders/Basic.Shader");
+
+        std::string vertexShader = shaderSource.VertexSource;
+        std::string fragmentShader = shaderSource.FragmentSource;
+
+        unsigned int shader = CreateShader(vertexShader, fragmentShader);
+
+        glUseProgram(shader);
+
+        int location = glGetUniformLocation(shader, "u_Color");
+
+        ASSERT(location != -1);
+        //glUniform4f(location, 0.0f, 0.7f, 0.8f, 1.0f);
+
+        float b = 0.0f;
+        float increment = 0.05f;
+
+        /* Loop until the user closes the window */
+        while (!glfwWindowShouldClose(window))
+        {
+            /* Render here */
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            //glDrawArrays(GL_TRIANGLES, 0, 6);
+            //Use glDrawArrays when specifically drawing from an array (ex: float positions, above)
+            //In our example, we are drawing from the indices, so we use glDrawElements
 
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+            glUseProgram(shader);
+            GLCall(glUniform4f(location, 0.0f, b, 1.0f, 1.0f));
+            glBindVertexArray(vao);
+            ib.Bind();
 
-        /* Poll for and process events */
-        glfwPollEvents();
+            //glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+            GLCall(glEnableVertexAttribArray(0));
+            GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+
+            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+
+            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); //Triangle, number of indices, data type, nothing...)
+
+
+            if (b > 1.0f)
+                increment = -0.05f;
+            else if (b < 0.05f)
+                increment = 0.02f;
+
+            b += increment;
+
+            /* Swap front and back buffers */
+            glfwSwapBuffers(window);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
+
+        glDeleteProgram(shader);
     }
-
-    glDeleteProgram(shader);
 
     glfwTerminate();
     return 0;
