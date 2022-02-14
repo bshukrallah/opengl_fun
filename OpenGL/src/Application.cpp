@@ -11,6 +11,7 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
+#include "texture.h"
 
 int main(void)
 {
@@ -42,29 +43,41 @@ int main(void)
         LOG("Debug Logging is True"); //LOG command is set to only work in DEBUG compile
         LOG(glGetString(GL_VERSION)); //LOG OpenGL Version to console
         float positions[] = {
-       -0.5f, -0.5f,
-        0.5f,  0.5f,
-        0.5f, -0.5f,
-       -0.5f,  0.5f
+        // X   Y     TEXTURE(X, Y)
+       -0.5f, -0.5f, 0.0f, 0.0f, // 0
+        0.5f, -0.5f, 1.0f, 0.0f, // 1
+        0.5f,  0.5f, 1.0f, 1.0f, // 2
+       -0.5f,  0.5f, 0.0f, 1.0f  // 3
         };
 
         unsigned int indices[] = {
             0,1,2,
-            0,3,1
+            2,3,0
         };
+
+
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         VertexArray va;
         VertexBuffer vb(positions, sizeof(positions));
 
         VertexBufferLayout layout;
         layout.Push<float>(2);
+        layout.Push<float>(2);
         va.AddBuffer(vb, layout);
 
         IndexBuffer ib(indices, sizeof(indices));
 
-        Shader shader("resources/shaders/Basic.shader");
+
+        //Change Shader to Basic.Shader or image_texture.shader to see the difference
+        Shader shader("resources/shaders/image_texture.shader");
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.0f, 0.7f, 0.8f, 1.0f);
+
+        Texture texture("resources/textures/smile.png");
+        texture.Bind();
+        shader.SetUniform1i("u_Texture", 0);
 
 
         va.Unbind();
