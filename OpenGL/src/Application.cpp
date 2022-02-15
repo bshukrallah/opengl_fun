@@ -13,6 +13,9 @@
 #include "Shader.h"
 #include "texture.h"
 
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
+
 int main(void)
 {
     GLFWwindow* window;
@@ -68,13 +71,16 @@ int main(void)
         va.AddBuffer(vb, layout);
 
         IndexBuffer ib(indices, sizeof(indices));
-
+        //Set up 4X3 ratio (left, right, bottom, top, zNear, zFar...
+        //if you multiple each of the first 4 numbers, you get 4X3, which is the aspect ratio of our window.
+        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
 
         //Change Shader to Basic.Shader or image_texture.shader to see the difference
         Shader shader("resources/shaders/image_texture.shader");
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.0f, 0.7f, 0.8f, 1.0f);
-
+        shader.SetUniformMat4f("u_MVP", proj);
+        
         Texture texture("resources/textures/smile.png");
         texture.Bind();
         shader.SetUniform1i("u_Texture", 0);
