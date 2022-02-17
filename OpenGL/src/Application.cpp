@@ -47,10 +47,10 @@ int main(void)
         LOG(glGetString(GL_VERSION)); //LOG OpenGL Version to console
         float positions[] = {
         // X   Y     TEXTURE(X, Y)
-       -0.5f, -0.5f, 0.0f, 0.0f, // 0
-        0.5f, -0.5f, 1.0f, 0.0f, // 1
-        0.5f,  0.5f, 1.0f, 1.0f, // 2
-       -0.5f,  0.5f, 0.0f, 1.0f  // 3
+       -75.0f, -75.0f, 0.0f, 0.0f, // 0
+        150.0f, -75.0f, 1.0f, 0.0f, // 1
+        150.0f,  150.0f, 1.0f, 1.0f, // 2
+       -75.0f,  150.0f, 0.0f, 1.0f  // 3
         };
 
         unsigned int indices[] = {
@@ -73,13 +73,17 @@ int main(void)
         IndexBuffer ib(indices, sizeof(indices));
         //Set up 4X3 ratio (left, right, bottom, top, zNear, zFar...
         //if you multiple each of the first 4 numbers, you get 4X3, which is the aspect ratio of our window.
-        glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+        glm::mat4 proj = glm::ortho(-200.0f, 200.0f, -150.0f, 150.0f, -1.0f, 1.0f);
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-80, 0, 0));
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(50, -40, 0));
+
+        glm::mat4 mvp = proj * view *model;
 
         //Change Shader to Basic.Shader or image_texture.shader to see the difference
         Shader shader("resources/shaders/image_texture.shader");
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.0f, 0.7f, 0.8f, 1.0f);
-        shader.SetUniformMat4f("u_MVP", proj);
+        shader.SetUniformMat4f("u_MVP", mvp);
         
         Texture texture("resources/textures/smile.png");
         texture.Bind();
