@@ -1,3 +1,5 @@
 .vs/*
 x64/*
 intermediates/*
+OpenGL/imgui.ini
+OpenGL/src/vendor/imgui/main.cpp

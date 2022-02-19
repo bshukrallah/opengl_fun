@@ -16,8 +16,8 @@ Shader::Shader(const std::string& filepath)
     std::string vertexShader = shaderSource.VertexSource;
     std::string fragmentShader = shaderSource.FragmentSource;
     //Print out the shaders to console by uncommenting the two lines below
-    //LOG(vertexShader);
-    //LOG(fragmentShader);
+    LOG(vertexShader);
+    LOG(fragmentShader);
     m_RendererID = CreateShader(vertexShader, fragmentShader);
 }
 
