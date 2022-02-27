@@ -3,3 +3,7 @@ x64/*
 intermediates/*
 OpenGL/imgui.ini
 OpenGL/src/vendor/imgui/main.cpp
+.scannerwork/*
+sonar-project.properties
+compile_commands.json
+cppcheck-report.xml

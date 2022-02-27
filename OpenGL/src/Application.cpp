@@ -21,6 +21,7 @@
 
 #include "tests/TestClearColor.h"
 #include "tests/TestTexture2D.h"
+#include "tests/Triforce.h"
 
 int main(void)
 {
@@ -74,7 +75,7 @@ int main(void)
 
         testMenu->RegisterTest<test::TestClearColor>("Background Color");
         testMenu->RegisterTest<test::TestTexture2D>("2D Texture Test");
-
+        testMenu->RegisterTest<test::Triforce>("Triforce");
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
