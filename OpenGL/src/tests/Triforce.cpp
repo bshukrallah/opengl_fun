@@ -10,9 +10,10 @@ namespace test {
 
 
 	Triforce::Triforce()
-		: m_TranslationA{ -50, -40, 0 }, m_TranslationB{ 130, -40, 0 }, m_Proj(glm::ortho(-200.0f, 200.0f, -150.0f, 150.0f, -1.0f, 1.0f)), m_View(glm::translate(glm::mat4(1.0f), glm::vec3(-80, 0, 0)))
+		: m_TranslationA{ -50, -40, 0 }, m_Proj(glm::ortho(-200.0f, 200.0f, -200.0f, 150.0f, -1.0f, 1.0f)), m_View(glm::translate(glm::mat4(1.0f), glm::vec3(-80, 0, 0)))
 	
 	{
+
 
 		GLfloat positions[] = //x, y, z ... RGB
 		{
@@ -38,14 +39,16 @@ namespace test {
 		m_VertexBuffer = std::make_unique<VertexBuffer>(positions, sizeof(positions));
 
 		VertexBufferLayout layout;
-		layout.Push<float>(2);
-		layout.Push<float>(2);
+		//Number of objects...
+		layout.Push<float>(3);
+		layout.Push<float>(3);
 		m_VAO->AddBuffer(*m_VertexBuffer, layout);
 		m_IndexBuffer = std::make_unique<IndexBuffer>(indices, sizeof(indices));
 
 
 		m_Shader = std::make_unique<Shader>("resources/shaders/Triforce.shader");
 		m_Shader->Bind();
+
 
 	}
 
@@ -61,10 +64,12 @@ namespace test {
 		Renderer renderer;
 
 		{
-
-			m_Shader->Bind();
-			//m_Shader->SetUniformMat4f("u_MVP", mvp);
 			glm::mat4 model = glm::translate(glm::mat4(1.0f), m_TranslationA);
+			glm::mat4 mvp = m_Proj * m_View * model;
+			m_Shader->Bind();
+			m_Shader->SetUniformMat4f("u_MVP", mvp);
+
+
 			renderer.Draw(*m_VAO, *m_IndexBuffer, *m_Shader);
 		}
 		{

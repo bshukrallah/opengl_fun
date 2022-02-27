@@ -24,8 +24,7 @@ namespace test {
 		std::unique_ptr<VertexBuffer> m_VertexBuffer;
 		std::unique_ptr<IndexBuffer> m_IndexBuffer;
 		std::unique_ptr<Shader> m_Shader;
-		glm::vec3 m_TranslationA, m_TranslationB;
-		//std::unique_ptr<Texture> m_Texture;
+		glm::vec3 m_TranslationA;
 		glm::mat4 m_Proj, m_View;
 
 	};
